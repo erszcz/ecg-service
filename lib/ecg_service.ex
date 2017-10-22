@@ -2,17 +2,16 @@ defmodule EcgService do
   @moduledoc """
   Documentation for EcgService.
   """
+  use Application
 
-  @doc """
-  Hello world.
+  def start(_type, _args) do
+    import Supervisor.Spec
 
-  ## Examples
+    children = [
+      Plug.Adapters.Cowboy.child_spec(:http, EcgService.Router, [], [port: 4009])
+    ]
 
-      iex> EcgService.hello
-      :world
-
-  """
-  def hello do
-    :world
+    opts = [strategy: :one_for_one, name: EcgService.Supervisor]
+    Supervisor.start_link(children, opts)
   end
 end

@@ -11,7 +11,8 @@ defmodule EcgService.Mixfile do
   end
 
   def application do
-    [extra_applications: [:logger]]
+    [extra_applications: [:logger],
+     mod: {EcgService, []}]
   end
 
   defp deps do
