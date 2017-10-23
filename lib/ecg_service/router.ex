@@ -11,6 +11,24 @@ defmodule EcgService.Router do
     send_resp(conn, 200, "ecg-service")
   end
 
+  get "/beam/:beam_file/dot" do
+    conn = Plug.Conn.fetch_query_params conn
+    params = conn.query_params
+    Logger.info "params: #{inspect params}"
+    payload = params["payload"]
+    Logger.info "payload: #{payload}"
+    try do
+      beam = payload
+             |> Base.decode64!()
+             |> inflate!()
+      dot = beam_to_dot(beam_file, beam)
+      send_resp(conn, 200, dot)
+    rescue
+      ex -> Logger.error "error #{inspect(ex)} request payload #{payload}"
+            send_resp(conn, 500, "")
+    end
+  end
+
   post "/beam/:beam_file/dot" do
     {:ok, body, conn} = Plug.Conn.read_body(conn)
     try do
@@ -40,5 +58,12 @@ defmodule EcgService.Router do
     end
   end
 
-end
+  def inflate!(deflated) do
+    z = :zlib.open()
+    :zlib.inflateInit(z)
+    inflated = :zlib.inflate(z, deflated)
+    :zlib.close(z)
+    inflated
+  end
 
+end
